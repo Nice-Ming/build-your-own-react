@@ -1,11 +1,15 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import './index.css';
-import App from './App';
+/** @jsx Didact.createElement */
+import Didact from './Didact'
 
-ReactDOM.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-  document.getElementById('root')
-);
+const element = (
+  <div id="foo">
+    <p>bar</p>
+    <b />
+  </div>
+)
+
+const container = document.getElementById("root")
+
+console.log(element)
+
+Didact.render(element, container)
