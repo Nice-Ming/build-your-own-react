@@ -1,32 +1,32 @@
 const TEXT_ELEMENT = 'TEXT_ELEMENT'
 
-function createTextElement(text) {
+function createTextElement (text) {
   return {
     type: TEXT_ELEMENT,
     props: {
       nodeValue: text,
       children: [],
-    }
+    },
   }
 }
 
-function createElement(type, props, ...children) {
+function createElement (type, props, ...children) {
   return {
     type,
     props: {
       ...props,
-      children: children.map(child => 
+      children: children.map(child =>
         typeof child === 'object'
           ? child
-          : createTextElement(child)
+          : createTextElement(child),
       ),
     },
   }
 }
 
-function render(element, container) {
+function render (element, container) {
   const dom =
-    element.type === TEXT_ELEMENT 
+    element.type === TEXT_ELEMENT
       ? document.createTextNode('')
       : document.createElement(element.type)
 

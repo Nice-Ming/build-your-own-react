@@ -8,7 +8,7 @@ const element = (
   </div>
 )
 
-const container = document.getElementById("root")
+const container = document.getElementById('root')
 
 console.log(element)
 
