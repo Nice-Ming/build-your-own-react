@@ -1,15 +1,20 @@
 /** @jsx Didact.createElement */
 import Didact from './Didact'
 
-const element = (
-  <div id="foo">
-    <p>bar</p>
-    <b />
-  </div>
-)
-
 const container = document.getElementById('root')
 
-console.log(element)
+const updateValue = e => {
+  rerender(e.target.value)
+}
 
-Didact.render(element, container)
+const rerender = value => {
+  const element = (
+    <div>
+      <input onInput={updateValue} value={value} />
+      <h2>Hello {value}</h2>
+    </div>
+  )
+  Didact.render(element, container)
+}
+
+rerender('World')
