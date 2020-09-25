@@ -8,8 +8,10 @@ const EffectTags = {
 
 let nextUnitOfWork = null
 let workInProgressRoot = null
+let workInProgressFiber = null
 let currentRoot = null
 let deletions = null
+let hookIndex = null
 
 function performUnitOfWork (fiber) {
   const isFunctionComponent = fiber.type instanceof Function
@@ -36,6 +38,9 @@ function performUnitOfWork (fiber) {
 }
 
 function updateFunctionComponent (fiber) {
+  workInProgressFiber = fiber
+  workInProgressFiber.hooks = []
+  hookIndex = 0
   const children = [fiber.type(fiber.props)]
 
   reconcileChildren(fiber, children)
@@ -282,7 +287,44 @@ function render (element, container) {
   nextUnitOfWork = workInProgressRoot
 }
 
+function useState (initialState) {
+  const oldHook =
+    workInProgressFiber.alternate &&
+    workInProgressFiber.alternate.hooks &&
+    workInProgressFiber.alternate.hooks[hookIndex]
+
+  const hook = {
+    state: oldHook ? oldHook.state : initialState,
+    queue: [],
+  }
+
+  const actions = oldHook ? oldHook.queue : []
+  actions.forEach(action => {
+    hook.state = action(hook.state)
+  })
+
+  const setState = (action) => {
+    hook.queue.push(action)
+
+    // 为nextUnitOfWork赋值 开启下一次的render
+    workInProgressRoot = {
+      dom: currentRoot.dom,
+      props: currentRoot.props,
+      alternate: currentRoot,
+    }
+
+    deletions = []
+    nextUnitOfWork = workInProgressRoot
+  }
+
+  workInProgressFiber.hooks.push(hook)
+  hookIndex++
+
+  return [hook.state, setState]
+}
+
 export default {
   createElement,
   render,
+  useState,
 }

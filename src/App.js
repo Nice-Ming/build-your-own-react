@@ -1,5 +1,6 @@
 /** @jsx Didact.createElement */
 import Didact from './Didact'
+import Counter from './Counter'
 import logo from './logo.svg'
 import './App.css'
 
@@ -19,6 +20,7 @@ function App () {
         >
           Learn React
         </a>
+        <Counter /> days
       </header>
     </div>
   )
