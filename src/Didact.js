@@ -12,14 +12,13 @@ let currentRoot = null
 let deletions = null
 
 function performUnitOfWork (fiber) {
-  // add dom node
-  if (!fiber.dom) {
-    fiber.dom = createDom(fiber)
-  }
+  const isFunctionComponent = fiber.type instanceof Function
 
-  // create new fibers
-  const elements = fiber.props.children
-  reconcileChildren(fiber, elements)
+  if (isFunctionComponent) {
+    updateFunctionComponent(fiber)
+  } else {
+    updateHostComponent(fiber)
+  }
 
   // return next unit of work
   if (fiber.child) {
@@ -34,6 +33,22 @@ function performUnitOfWork (fiber) {
 
     nextFiber = nextFiber.parent
   }
+}
+
+function updateFunctionComponent (fiber) {
+  const children = [fiber.type(fiber.props)]
+
+  reconcileChildren(fiber, children)
+}
+
+function updateHostComponent (fiber) {
+  // add dom node
+  if (!fiber.dom) {
+    fiber.dom = createDom(fiber)
+  }
+
+  // create new fibers
+  reconcileChildren(fiber, fiber.props.children)
 }
 
 function reconcileChildren (workInProgressFiber, elements) {
@@ -198,7 +213,12 @@ function commitWork (fiber) {
     return
   }
 
-  const domParent = fiber.parent.dom
+  // 当需要添加新dom时 需要递归查找父级的真实dom 以便于执行appendChild
+  let domParentFiber = fiber.parent
+  while (!domParentFiber.dom) {
+    domParentFiber = domParentFiber.parent
+  }
+  const domParent = domParentFiber.dom
 
   if (
     fiber.effectTag === EffectTags.PLACEMENT &&
@@ -215,11 +235,20 @@ function commitWork (fiber) {
       fiber.props,
     )
   } else if (fiber.effectTag === EffectTags.DELETION) {
-    domParent.removeChild(fiber.dom)
+    commitDeletion(fiber, domParent)
   }
 
   commitWork(fiber.child)
   commitWork(fiber.sibling)
+}
+
+function commitDeletion (fiber, domParent) {
+  // 当需要移除dom时 需要递归查找子级的真实dom 以便于执行removeChild
+  if (fiber.dom) {
+    domParent.removeChild(fiber.dom)
+  } else {
+    commitDeletion(fiber.child, domParent)
+  }
 }
 
 function workLoop (deadline) {
