@@ -63,7 +63,7 @@ function reconcileChildren (workInProgressFiber, elements) {
 
   while (
     index < elements.length ||
-    oldFiber != null // oldFiber maybe is undefined
+    oldFiber != null // 1.oldFiber maybe is undefined; 2.workInProgressFiber maybe haven't children.
   ) {
     const element = elements[index]
     let newFiber = null
@@ -218,7 +218,7 @@ function commitWork (fiber) {
     return
   }
 
-  // 当需要添加新dom时 需要递归查找父级的真实dom 以便于执行appendChild
+  // 当需要添加新dom时 需要遍历查找父级的真实dom 以便于执行appendChild
   let domParentFiber = fiber.parent
   while (!domParentFiber.dom) {
     domParentFiber = domParentFiber.parent
@@ -243,6 +243,7 @@ function commitWork (fiber) {
     commitDeletion(fiber, domParent)
   }
 
+  // 深度优先遍历
   commitWork(fiber.child)
   commitWork(fiber.sibling)
 }
